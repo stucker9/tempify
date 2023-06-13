@@ -1,14 +1,56 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from tkinter.ttk import Progressbar, Separator
+from tkinter.ttk import Separator
+from PIL import Image, ImageTk
 import pandas as pd
 import os
 import re
 import time
 
+splash_window = None
 result_boxes = []
-loading_bar = None
 is_expanded = False  # Global variable to track the expansion state
+
+def center_window(window):
+    window.update_idletasks()
+    width = window.winfo_width()
+    height = window.winfo_height()
+    x = (window.winfo_screenwidth() // 2) - (width // 2)
+    y = (window.winfo_screenheight() // 2) - (height // 2)
+    window.geometry(f"{width}x{height}+{x}+{y}")
+
+def show_splash_screen():
+    splash_window = tk.Toplevel(root)
+    splash_window.overrideredirect(True)  # Remove window decorations
+
+    # Load and display the image
+    image = Image.open("tempify.png")
+    logo_image = ImageTk.PhotoImage(image)
+    logo_label = tk.Label(splash_window, image=logo_image)
+    logo_label.pack()
+
+    center_window(splash_window)  # Center the splash screen window
+    splash_window.update()  # Update the splash screen window
+
+    # Fade in the splash screen
+    for i in range(11):
+        alpha_value = i / 10.0  # Increase transparency from 0.0 to 1.0
+        splash_window.attributes("-alpha", alpha_value)
+        splash_window.update_idletasks()
+        time.sleep(0.03)  # Reduce the sleep duration for smoother animation
+
+    # Wait for 3 seconds
+    time.sleep(3)
+
+    # Fade out the splash screen
+    for i in range(10, -1, -1):
+        alpha_value = i / 10.0  # Decrease transparency from 1.0 to 0.0
+        splash_window.attributes("-alpha", alpha_value)
+        splash_window.update_idletasks()
+        time.sleep(0.03)  # Reduce the sleep duration for smoother animation
+
+    splash_window.destroy()  # Destroy the splash screen window
+    root.deiconify()  # Show the main program window
 
 def calculate_average_temperature(file_name):
     try:
@@ -31,8 +73,6 @@ def extract_sensor_name_and_dates(file_name):
         return None, None, None
 
 def upload_csv():
-    show_loading_bar()
-
     filenames = filedialog.askopenfilenames(filetypes=(("CSV Files", "*.csv"),))
     for filename in filenames:
         averages = calculate_average_temperature(filename)
@@ -43,22 +83,6 @@ def upload_csv():
             if sensor_name is not None and date_from is not None and date_to is not None:
                 result = f"Sensor = {sensor_name}    Dates = {date_from} to {date_to}\n{averages.to_string()}"
                 create_result_box(result)
-
-    # Start a timer to stop the loading bar after 2 seconds
-    root.after(100, stop_loading_bar)
-
-def show_loading_bar():
-    global loading_bar
-    loading_bar = Progressbar(root, mode='determinate', cursor='watch')
-    loading_bar.pack(pady=5)
-    loading_bar.start()
-
-def stop_loading_bar():
-    if loading_bar is not None:
-        loading_bar.stop()
-        loading_bar.pack_forget()
-
-
 
 def copy_results(txt_result):
     results = txt_result.get("1.0", tk.END)
@@ -85,12 +109,6 @@ def create_result_box(result):
 
     remove_button = tk.Button(frame, text="X", fg="white", bg="red", activebackground="red", font=("Arial", 12, 'bold'), width=2, cursor='X_cursor', command=lambda: remove_result_box(frame))
     remove_button.pack(side=tk.LEFT, anchor=tk.CENTER, fill=tk.Y)
-
-    #lines_frame = tk.Frame(frame, height=20, width=60, cursor='X_cursor')
-    #lines_frame.pack(side=tk.LEFT, pady=5)
-
-    #lines_symbol = tk.Label(lines_frame, text='☰ ☰ ☰↨', font=("Arial", 10), anchor=tk.W)
-    #lines_symbol.pack(side=tk.LEFT, padx=5)
 
     txt_result = tk.Text(frame, wrap=tk.WORD, height=3, width=65)
     txt_result.insert(tk.END, result)
@@ -125,11 +143,17 @@ def expand_content_boxes():
 def show_about():
     messagebox.showinfo("About", "Tempify - A CSV Processor for Arturo\nVersion 1.0\n\nOperation Stand Down Rhode Island\n       \"A Hand Up Not A Hand Out\"\n\n~OSDRI USE ONLY~\n\nCreated by Steve Tucker\nContact: stucker@osdri.org")
 
+def show_help():
+    messagebox.showinfo("How to Use", "")
+
 if __name__ == "__main__":
     root = tk.Tk()
+    root.withdraw()
+    root.after(0, show_splash_screen)
     root.title('Tempify - A CSV Processor for OSDRI')
     root.geometry('800x950')  # width x height
     root.resizable(False, False)
+    root.iconbitmap("icon.ico")
     root.bind("<Escape>", lambda event: root.destroy())
 
     # Create the menu bar
@@ -148,9 +172,9 @@ if __name__ == "__main__":
 
     # Create the Help dropdown menu
     help_menu = tk.Menu(menubar, tearoff=0)
-    help_menu.add_command(label="How to Use")
+    help_menu.add_command(label="How to Use", command=show_help)
     help_menu.add_command(label="About", command=show_about)
-    menubar.add_cascade(label="Help", menu=help_menu)
+    menubar.add_cascade(label="Help", menu=show_help)
 
     btn_frame = tk.Frame(root)
     btn_frame.pack(pady=5)
