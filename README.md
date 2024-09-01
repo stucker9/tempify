@@ -1,6 +1,6 @@
 # Tempify, a CSV Processor
 
-Tempify is a Python application built with tkinter that allows you to upload and process CSV files containing temperature data. It calculates the average temperature for each date in the file and displays the results in a user-friendly interface.
+Tempify is a Python application built with Tkinter that allows you to quickly upload and process CSV files containing temperature data generated from exporting data from the Mocreo mobile app. It calculates the average temperature for each individual date in the file, automatically detects which months' data it's processing, and displays the results in a user-friendly, easy-to-read, one-page Excel template that is ready for printing.
 
 ## Features
 
@@ -18,7 +18,7 @@ Tempify is a Python application built with tkinter that allows you to upload and
 
 ## Installation
 
-To be determined, but PyInstaller is recommended for creating an executable.
+Tempify is a portable Windows application so you simply download the executable and launch it. Due to it being a customized Python program without (valid) certificates that aren't recognized by Windows, a security prompt will likely appear. Click 'Run anyway' to start the application if you run into this.
 
 ## Usage
 **Note:** It is assumed that you have already logged onto the Mocreo portal website to export all the historical data you want to extract in individual CSV files per sensor.
